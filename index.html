@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aplikasi HARINFOOD Cetak Tulisan Rotasi</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#4facfe">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Cetak Rotasi">
+    <meta name="description" content="Aplikasi untuk mencetak tulisan dengan rotasi 90 derajat">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkFwbGlrYXNpIENldGFrIFR1bGlzYW4gUm90YXNpIiwKICAic2hvcnRfbmFtZSI6ICJDZXR0YWsgUm90YXNpIiwKICAiZGVzY3JpcHRpb24iOiAiQXBsaWthc2kgdW50dWsgbWVuY2V0YWsgdHVsaXNhbiBkZW5nYW4gcm90YXNpIDkwIGRlcmFqYXQiLAogICJzdGFydF91cmwiOiAiLyIsCiAgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsCiAgImJhY2tncm91bmRfY29sb3IiOiAiIzY2N2VlYSIsCiAgInRoZW1lX2NvbG9yIjogIiM0ZmFjZmUiLAogICJpY29ucyI6IFsKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSGRwWkhSb1BTSXhNakFpSUdobGFXZG9kRDBpTVRJd0lqNDhZMmx5WTJ4bElHTjRQU0kyTUNJZ1kza2dQU0kyTUNJZ2NqMGlOVEFpSUdacGJHdzlJaU0wWm1GalptVWlMejQ4ZEdWNGRDQjRQU0kyTUNJZ2VUMGlOelFpSUdacGJHdzlJaU0yTmpkbFpXRWlJR1p2Ym5RdGMybDZaVDBpTWpRaUlHWnZiblF0ZDJWcFoyaDBQU0ppYjJ4a0lpQjBaWGgwTFdGdVkyaHZjajBpYldsa1pHeGxJajQ4SUVOUFRVQThMM1JsZUhRK1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjEyMHgxMjAiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfSwKICAgIHsKICAgICAgInNyYyI6ICJkYXRhOmltYWdlL3N2Zyt4bWw7YmFzZTY0LFBITjJaeUI0Yld4dWN6MGlhSFIwY0RvdkwzZDNkeTUzTXk1dmNtY3ZNakF3TUM5emRtY2lJSGRwWkhSb1BTSXlOVFlpSUdobGFXZG9kRDBpTWpVMklqNDhZMmx5WTJ4bElHTjRQU0l4TWpnaUlHTjVQU0l4TWpnaUlISjlQU0l4TVRBaUlHWnBiR3c5SWlNMFptRmpabVVpTHo0OGRHVjRkQ0I0UFNJeE1qZ2lJSGs5SWpFME1pSWdabWxzYkQwaVl6WTJOMlZsWVNJZ1ptOXVkQzF6YVhwbFBTSTBPQ0lnWm05dWRDMTNaV2xuYUhRZ1BTSWliMnhrSWlCMFpYaDBMV0Z1WTJodmNqMGliV2xrWkd4bElqNDhJVU5QVFVBOE9pQThMM1JsZUhRK1BDOXpkbWMrIiwKICAgICAgInNpemVzIjogIjI1NngyNTYiLAogICAgICAidHlwZSI6ICJpbWFnZS9zdmcreG1sIgogICAgfQogIF0KfQ==">
+    
+    <!-- Apple Touch Icons -->
+    <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIxMjAiIGhlaWdodD0iMTIwIj48Y2lyY2xlIGN4PSI2MCIgY3k9IjYwIiByPSI1MCIgZmlsbD0iIzRmYWNmZSIvPjx0ZXh0IHg9IjYwIiB5PSI3NCIgZmlsbD0iIzY2N2VlYSIgZm9udC1zaXplPSIyNCIgZm9udC13ZWlnaHQ9ImJvbGQiIHRleHQtYW5jaG9yPSJtaWRkbGUiPjwhQ09NQTwvdGV4dD48L3N2Zz4=">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+            font-size: 16px;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            font-family: inherit;
+            resize: vertical;
+            min-height: 120px;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .control-item {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 8px;
+            font-size: 16px;
+            background: white;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #4facfe;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 140px;
+        }
+
+        .btn-preview {
+            background: linear-gradient(45deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-preview:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-print {
+            background: linear-gradient(45deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .btn-print:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(86, 171, 47, 0.3);
+        }
+
+
+
+
+
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+            }
+
+            .control-item {
+                min-width: auto;
+            }
+
+            .buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            button {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🖨️ Aplikasi Cetak Tulisan Rotasi</h1>
+            <p>Cetak tulisan dengan rotasi 90° dan ukuran 30px</p>
+        </div>
+
+        <div class="content">
+            <div class="input-group">
+                <label for="textInput">Masukkan Teks yang Akan Dicetak:</label>
+                <textarea id="textInput" placeholder="Ketik teks Anda di sini..."></textarea>
+            </div>
+
+            <div class="controls">
+                <div class="control-item">
+                    <label for="fontFamily">Jenis Font:</label>
+                    <select id="fontFamily">
+                        <option value="Arial">Arial</option>
+                        <option value="Times New Roman">Times New Roman</option>
+                        <option value="Calibri">Calibri</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Comic Sans MS">Comic Sans MS</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label for="textAlign">Posisi Teks:</label>
+                    <select id="textAlign">
+                        <option value="center">Tengah</option>
+                        <option value="left">Kiri</option>
+                        <option value="right">Kanan</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label for="paperMode">Mode Kertas:</label>
+                    <select id="paperMode">
+                        <option value="continuous">Panjang Otomatis (58mm x Auto)</option>
+                        <option value="multiline">Multi Baris Vertikal</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="info-box" style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+                <h4 style="color: #1976d2; margin-bottom: 8px;">📏 Info Ukuran Kertas:</h4>
+                <p style="color: #1565c0; margin: 0; font-size: 14px;">
+                    • Lebar kertas: <strong>Otomatis menyesuaikan panjang tulisan</strong><br>
+                    • Panjang kertas: <strong>Otomatis sesuai panjang teks</strong><br>
+                    • Kertas akan menyesuaikan ukuran tulisan yang ditulis<br>
+                    • Minimal lebar 58mm, maksimal sesuai kebutuhan
+                </p>
+            </div>
+
+            <div class="buttons">
+                <button class="btn-print" onclick="printText()">🖨️ Cetak Sekarang</button>
+            </div>
+
+
+
+        </div>
+    </div>
+
+    <script>
+
+
+        function printText() {
+            const textInput = document.getElementById('textInput').value;
+            
+            if (textInput.trim() === '') {
+                alert('⚠️ Silakan masukkan teks terlebih dahulu!');
+                return;
+            }
+
+            const fontFamily = document.getElementById('fontFamily').value;
+            const textAlign = document.getElementById('textAlign').value;
+            
+            // Buat window baru khusus untuk print
+            const printWindow = window.open('', '_blank', 'width=800,height=600');
+            
+            const printHTML = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="UTF-8">
+                    <title>Print Preview</title>
+                    <style>
+                        * {
+                            margin: 0;
+                            padding: 0;
+                            box-sizing: border-box;
+                        }
+                        
+                        @page {
+                            size: auto;
+                            margin: 0;
+                        }
+                        
+                        html, body {
+                            width: 100%;
+                            height: 100vh;
+                            background: white;
+                            overflow: hidden;
+                        }
+                        
+                        .print-container {
+                            width: 100vw;
+                            height: 100vh;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            background: white;
+                            position: relative;
+                        }
+                        
+                        .text-rotated {
+                            font-family: '${fontFamily}', Arial, sans-serif;
+                            font-size: 60px;
+                            font-weight: bold;
+                            color: black;
+                            white-space: nowrap;
+                            text-align: ${textAlign};
+                            transform: rotate(90deg);
+                            transform-origin: center center;
+                            line-height: 1;
+                            padding: 100px 50px;
+                        }
+                        
+                        @media screen {
+                            .print-container {
+                                border: 2px solid #333;
+                                margin: 20px;
+                                width: calc(100vw - 40px);
+                                height: calc(100vh - 40px);
+                                box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+                            }
+                            
+                            body {
+                                background: #f0f0f0;
+                            }
+                        }
+                        
+                        @media print {
+                            .print-container {
+                                margin: 0;
+                                border: none;
+                                box-shadow: none;
+                                width: 100%;
+                                height: 100%;
+                            }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-container">
+                        <div class="text-rotated">${textInput}</div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            printWindow.document.write(printHTML);
+            printWindow.document.close();
+            
+            // Auto print setelah loading
+            printWindow.onload = function() {
+                setTimeout(() => {
+                    printWindow.print();
+                }, 1000);
+            };
+        }
+
+        // PWA Installation
+        let deferredPrompt;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            showInstallButton();
+        });
+
+        function showInstallButton() {
+            const installButton = document.createElement('button');
+            installButton.textContent = '📱 Install Aplikasi';
+            installButton.className = 'btn-install';
+            installButton.style.cssText = `
+                background: linear-gradient(45deg, #ff6b6b 0%, #ee5a24 100%);
+                color: white;
+                padding: 15px 30px;
+                border: none;
+                border-radius: 10px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                min-width: 140px;
+                margin-left: 15px;
+            `;
+            
+            installButton.addEventListener('click', installApp);
+            document.querySelector('.buttons').appendChild(installButton);
+        }
+
+        async function installApp() {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                
+                if (outcome === 'accepted') {
+                    alert('✅ Aplikasi berhasil diinstall! Sekarang Anda bisa menggunakan aplikasi ini offline.');
+                }
+                
+                deferredPrompt = null;
+                document.querySelector('.btn-install')?.remove();
+            }
+        }
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'harinfood-banner-v1';
+                    const urlsToCache = ['/'];
+
+                    self.addEventListener('install', (event) => {
+                        event.waitUntil(
+                            caches.open(CACHE_NAME)
+                                .then((cache) => cache.addAll(urlsToCache))
+                        );
+                    });
+
+                    self.addEventListener('fetch', (event) => {
+                        event.respondWith(
+                            caches.match(event.request)
+                                .then((response) => {
+                                    return response || fetch(event.request);
+                                })
+                        );
+                    });
+                `;
+                
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                const swUrl = URL.createObjectURL(blob);
+                
+                navigator.serviceWorker.register(swUrl)
+                    .then(() => console.log('Service Worker registered'))
+                    .catch(() => console.log('Service Worker registration failed'));
+            });
+        }
+
+
+
+        // Shortcut keyboard untuk print (Ctrl+P)
+        document.addEventListener('keydown', function(e) {
+            if (e.ctrlKey && e.key === 'p') {
+                e.preventDefault();
+                printText();
+            }
+        });
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'97596c1453e28342',t:'MTc1NjI3NTE5OC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
