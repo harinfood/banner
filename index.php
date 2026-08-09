@@ -21,6 +21,14 @@
         .glass { background: rgba(22, 25, 48, 0.9); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .glass-input { background: rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 255, 255, 0.15); color: white; }
         .glass-input:focus { border-color: #06b6d4; outline: none; }
+        .glow-cart {
+            animation: glowPulse 2s infinite;
+            box-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(6, 182, 212, 0.3);
+        }
+        @keyframes glowPulse {
+            0%, 100% { box-shadow: 0 0 20px rgba(6, 182, 212, 0.6), 0 0 40px rgba(6, 182, 212, 0.3); }
+            50% { box-shadow: 0 0 30px rgba(6, 182, 212, 0.8), 0 0 60px rgba(6, 182, 212, 0.5); }
+        }
         @media print {
             body * { visibility: hidden; }
             #printable-receipt, #printable-receipt * { visibility: visible; }
@@ -46,7 +54,7 @@
                 </div>
                 <div>
                     <h1 class="text-lg font-black tracking-tight text-white flex items-center gap-1.5">
-                        HARINFOOD <span class="text-[9px] px-1.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">POS Lite</span>
+                        HARINFOOD <span class="text-[9px] px-1.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">POS Lite v2</span>
                     </h1>
                     <p class="text-[10px] text-gray-400 font-medium">Sistem Pemesanan & Kasir Resto</p>
                 </div>
@@ -59,12 +67,6 @@
                         <div class="text-xs font-bold text-gray-200">{{ userRole === 'kasir' ? authState.kasirName : 'Mode Pelanggan' }}</div>
                         <div class="text-[9px] text-gray-500">{{ userRole === 'kasir' ? 'Keluar' : 'Akses Kasir' }}</div>
                     </div>
-                </button>
-
-                <button @click="openModal('cart')" class="relative flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 text-brand-dark font-extrabold text-sm rounded-xl shadow-lg transition active:scale-95">
-                    <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></svg>
-                    <span class="hidden sm:inline">Pesanan</span>
-                    <span class="bg-black/20 text-brand-dark px-1.5 py-0.5 rounded-md text-[10px]">{{ cartTotalItems }}</span>
                 </button>
             </div>
         </div>
@@ -84,7 +86,7 @@
                 </button>
                 <button @click="openModal('stock')" class="px-3.5 py-2 bg-brand-border hover:bg-white/10 rounded-xl text-xs font-bold text-white transition">📦 Kelola Stok</button>
                 <button @click="openModal('addProduct')" class="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-bold text-white transition">＋ Tambah Produk</button>
-                <button @click="fetchReports(); openModal('reports')" class="px-3.5 py-2 bg-brand-border hover:bg-white/10 rounded-xl text-xs font-bold text-white transition">📈 Laporan Transaksi</button>
+                <button @click="fetchReports(); openModal('reports')" class="px-3.5 py-2 bg-brand-border hover:bg-white/10 rounded-xl text-xs font-bold text-white transition">📈 Laporan</button>
             </div>
         </section>
 
@@ -121,15 +123,24 @@
                         + Tambah
                     </button>
                     <div v-else class="flex items-center justify-between bg-black/40 p-1 rounded-xl border border-cyan-500/30">
-                        <button @click="updateCartQty(product.id, -1)" class="w-7 h-7 rounded-lg bg-brand-border text-white font-bold">-</button>
-                        <span class="text-xs font-black text-cyan-400">{{ getCartQty(product.id) }}</span>
-                        <button @click="updateCartQty(product.id, 1)" class="w-7 h-7 rounded-lg bg-cyan-500 text-brand-dark font-bold">+</button>
+                        <button @click="updateCartQty(product.id, -1)" class="w-7 h-7 rounded-lg bg-brand-border text-white font-bold text-sm">−</button>
+                        <input type="number" :value="getCartQty(product.id)" @input="e => setCartQty(product.id, parseInt(e.target.value) || 0)" class="w-12 text-center text-xs font-black text-cyan-400 bg-transparent outline-none" min="0" />
+                        <button @click="updateCartQty(product.id, 1)" class="w-7 h-7 rounded-lg bg-cyan-500 text-brand-dark font-bold text-sm">+</button>
                     </div>
                 </div>
             </div>
         </section>
 
     </main>
+
+    <!-- FLOATING CART BUTTON (Glow Effect) -->
+    <div v-if="cartTotalItems > 0" class="fixed bottom-6 right-6 z-40 glow-cart">
+        <button @click="openModal('cart')" class="flex flex-col items-center justify-center px-6 py-4 bg-gradient-to-br from-cyan-500 via-blue-500 to-cyan-600 text-brand-dark font-extrabold rounded-full shadow-2xl hover:scale-105 transition">
+            <div class="text-2xl">🛒</div>
+            <div class="text-xs mt-1">{{ cartTotalItems }} item</div>
+            <div class="text-sm font-black mt-0.5">{{ formatRupiah(cartTotalHarga) }}</div>
+        </button>
+    </div>
 
     <!-- MODALS -->
 
@@ -146,7 +157,7 @@
         </div>
     </div>
 
-    <!-- 2. KERANJANG & CHECKOUT -->
+    <!-- 2. KERANJANG & CHECKOUT (UPDATED) -->
     <div v-if="modals.cart" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-end p-0 sm:p-4">
         <div class="glass w-full sm:max-w-md h-full sm:h-[95vh] sm:rounded-3xl flex flex-col shadow-2xl relative border border-white/10">
             <div class="p-5 border-b border-white/10 flex items-center justify-between">
@@ -162,22 +173,27 @@
                         <p class="text-[11px] text-cyan-400 font-extrabold">{{ formatRupiah(item.product.harga) }}</p>
                     </div>
                     <div class="flex items-center gap-2 bg-black/40 p-1 rounded-xl">
-                        <button @click="updateCartQty(item.product.id, -1)" class="w-6 h-6 bg-brand-border text-white rounded">-</button>
-                        <span class="text-xs font-bold text-cyan-400">{{ item.qty }}</span>
-                        <button @click="updateCartQty(item.product.id, 1)" class="w-6 h-6 bg-cyan-500 text-brand-dark rounded">+</button>
+                        <button @click="updateCartQty(item.product.id, -1)" class="w-6 h-6 bg-brand-border text-white rounded text-xs">−</button>
+                        <input type="number" :value="item.qty" @input="e => setCartQty(item.product.id, parseInt(e.target.value) || 0)" class="w-10 text-center text-xs font-bold text-cyan-400 bg-transparent outline-none" />
+                        <button @click="updateCartQty(item.product.id, 1)" class="w-6 h-6 bg-cyan-500 text-brand-dark rounded text-xs">+</button>
                     </div>
                 </div>
             </div>
-            <div v-if="cart.length > 0" class="p-5 border-t border-white/10 bg-black/40">
-                <div class="grid grid-cols-2 gap-3 mb-3">
-                    <input type="text" v-model="checkoutForm.nama" placeholder="Nama Pemesan" class="glass-input rounded-xl px-3 py-2 text-xs">
-                    <input type="text" v-model="checkoutForm.meja" placeholder="Nomor Meja" class="glass-input rounded-xl px-3 py-2 text-xs">
+            <div v-if="cart.length > 0" class="p-5 border-t border-white/10 bg-black/40 space-y-3">
+                <div class="grid grid-cols-1 gap-3">
+                    <input type="text" v-model="checkoutForm.nama" placeholder="Nama Pemesan" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                    <input type="text" v-model="checkoutForm.alamat" placeholder="Alamat / Nomor Meja" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                    <select v-model="checkoutForm.metode_pemesanan" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                        <option value="Ambil Sendiri">🏪 Ambil Sendiri</option>
+                        <option value="Delivery">🚚 Delivery</option>
+                    </select>
+                    <textarea v-model="checkoutForm.catatan_pesanan" placeholder="Catatan pesanan (opsional)" class="w-full glass-input rounded-xl px-3 py-2 text-xs resize-none h-20"></textarea>
                 </div>
-                <div v-if="userRole === 'kasir'" class="grid grid-cols-2 gap-3 mb-3">
+                <div v-if="userRole === 'kasir'" class="grid grid-cols-2 gap-3">
                     <input type="number" v-model.number="checkoutForm.diskon" placeholder="Diskon" class="glass-input rounded-xl px-3 py-2 text-xs text-rose-400">
                     <input type="number" v-model.number="checkoutForm.bayar" placeholder="Bayar Tunai" class="glass-input rounded-xl px-3 py-2 text-xs text-cyan-400 font-bold">
                 </div>
-                <div class="flex justify-between text-sm font-black text-white mb-3 pt-2 border-t border-white/10">
+                <div class="flex justify-between text-sm font-black text-white pt-2 border-t border-white/10">
                     <span>Total Tagihan</span><span class="text-cyan-400">{{ formatRupiah(cartTotalHarga) }}</span>
                 </div>
                 <button v-if="userRole === 'kasir'" @click="processKasirCheckout" class="w-full py-3 rounded-xl bg-emerald-500 text-brand-dark font-extrabold text-xs">Proses Pembayaran Kasir</button>
@@ -186,7 +202,7 @@
         </div>
     </div>
 
-    <!-- 3. KELOLA STOK (MANUAL TYPING) -->
+    <!-- 3. KELOLA STOK -->
     <div v-if="modals.stock" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass w-full max-w-3xl rounded-3xl p-6 relative max-h-[90vh] flex flex-col">
             <div class="flex justify-between pb-4 border-b border-white/10">
@@ -196,13 +212,13 @@
             <div class="flex-1 overflow-y-auto py-4">
                 <table class="w-full text-left text-xs">
                     <thead class="text-gray-400 uppercase border-b border-white/10">
-                        <tr><th class="pb-2">Menu</th><th class="pb-2 text-center">Stok (Ketik Manual)</th></tr>
+                        <tr><th class="pb-2">Menu</th><th class="pb-2 text-center">Stok (Edit Manual)</th></tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
                         <tr v-for="prod in products" :key="prod.id">
                             <td class="py-3 font-bold text-white">{{ prod.nama }}</td>
                             <td class="py-3 text-center">
-                                <input type="number" v-model.number="prod.stok" @change="updateStockManual(prod)" class="w-24 glass-input text-center rounded-lg px-2 py-1 font-bold text-cyan-400">
+                                <input type="number" v-model.number="prod.stok" @change="updateStockManual(prod)" class="w-24 glass-input text-center rounded-lg px-2 py-1 font-bold text-cyan-400" />
                             </td>
                         </tr>
                     </tbody>
@@ -211,29 +227,29 @@
         </div>
     </div>
 
-    <!-- 4. TAMBAH / EDIT PRODUK + LINK GAMBAR -->
+    <!-- 4. TAMBAH PRODUK / ITEM CUSTOM KASIR -->
     <div v-if="modals.addProduct" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass w-full max-w-md rounded-3xl p-6 relative">
             <div class="flex justify-between pb-4 border-b border-white/10 mb-4">
-                <h2 class="font-black text-white">Tambah Produk Baru</h2>
+                <h2 class="font-black text-white">{{ userRole === 'kasir' ? 'Tambah Item Custom' : 'Tambah Produk Baru' }}</h2>
                 <button @click="closeModal('addProduct')" class="text-gray-400">✕</button>
             </div>
             <div class="space-y-3">
                 <input type="text" v-model="productForm.nama" placeholder="Nama Menu" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
-                <select v-model="productForm.kategori_id" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                <select v-if="userRole !== 'kasir'" v-model="productForm.kategori_id" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
                     <option value="1">Makanan</option>
                     <option value="2">Minuman</option>
                 </select>
                 <input type="number" v-model.number="productForm.harga" placeholder="Harga Jual" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
-                <input type="number" v-model.number="productForm.harga_modal" placeholder="Harga Modal (HPP)" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
-                <input type="number" v-model.number="productForm.stok" placeholder="Stok Awal" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
-                <input type="text" v-model="productForm.foto" placeholder="Link / URL Gambar (https://...)" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
-                <button @click="saveProduct" class="w-full py-3 rounded-xl bg-emerald-500 text-brand-dark font-extrabold text-xs">Simpan ke Database</button>
+                <input v-if="userRole !== 'kasir'" type="number" v-model.number="productForm.harga_modal" placeholder="Harga Modal (HPP)" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                <input v-if="userRole !== 'kasir'" type="number" v-model.number="productForm.stok" placeholder="Stok Awal" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                <input v-if="userRole !== 'kasir'" type="text" v-model="productForm.foto" placeholder="Link / URL Gambar (https://...)" class="w-full glass-input rounded-xl px-3 py-2 text-xs">
+                <button @click="saveProduct" class="w-full py-3 rounded-xl bg-emerald-500 text-brand-dark font-extrabold text-xs">{{ userRole === 'kasir' ? 'Tambah ke Transaksi' : 'Simpan ke Database' }}</button>
             </div>
         </div>
     </div>
 
-    <!-- 5. PESANAN MASUK (KONFIRMASI KASIR) -->
+    <!-- 5. PESANAN MASUK -->
     <div v-if="modals.incomingOrders" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass w-full max-w-3xl rounded-3xl p-6 relative max-h-[90vh] flex flex-col">
             <div class="flex justify-between pb-4 border-b border-white/10">
@@ -245,41 +261,59 @@
                 <div v-for="ord in incomingOrders" :key="ord.id" class="p-4 bg-white/5 rounded-2xl border border-white/10 flex flex-col sm:flex-row justify-between gap-3">
                     <div>
                         <div class="flex gap-2 items-center mb-1">
-                            <span class="font-mono text-cyan-400 font-bold">{{ ord.order_code }}</span>
-                            <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase" :class="ord.status === 'PENDING' ? 'bg-amber-500/20 text-amber-400' : ord.status === 'APPROVED' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'">{{ ord.status }}</span>
+                            <span class="font-mono text-cyan-400 font-bold">{{ ord.invoice_code }}</span>
+                            <span class="text-[9px] px-2 py-0.5 rounded font-bold uppercase" :class="ord.status === 'Pending' ? 'bg-amber-500/20 text-amber-400' : ord.status === 'Approved' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-rose-500/20 text-rose-400'">{{ ord.status }}</span>
                         </div>
-                        <h4 class="text-sm font-extrabold text-white">{{ ord.nama_pelanggan }} ({{ ord.nomor_meja }})</h4>
+                        <h4 class="text-sm font-extrabold text-white">{{ ord.nama_pelanggan }}</h4>
+                        <p class="text-xs text-gray-400 mt-1"><strong>Alamat:</strong> {{ ord.alamat }}</p>
+                        <p class="text-xs text-gray-400"><strong>Metode:</strong> {{ ord.metode_pemesanan }}</p>
+                        <p v-if="ord.catatan_pesanan" class="text-xs text-cyan-300 mt-1">📝 {{ ord.catatan_pesanan }}</p>
                         <p class="text-xs text-gray-400 mt-1">{{ ord.items.map(i => i.product_nama + ' x' + i.qty).join(', ') }}</p>
                         <p class="text-xs font-bold text-cyan-400 mt-1">Total: {{ formatRupiah(ord.total_akhir) }}</p>
                     </div>
-                    <div v-if="ord.status === 'PENDING'" class="flex items-center gap-2">
-                        <button @click="updateOrderStatus(ord.id, 'APPROVED')" class="px-4 py-2 bg-emerald-500 text-brand-dark font-extrabold text-xs rounded-xl">Konfirmasi (Potong Stok)</button>
-                        <button @click="updateOrderStatus(ord.id, 'REJECTED')" class="px-3 py-2 bg-rose-500/20 text-rose-400 text-xs rounded-xl">Tolak</button>
+                    <div v-if="ord.status === 'Pending'" class="flex items-center gap-2">
+                        <button @click="updateOrderStatus(ord.id, 'Approved')" class="px-4 py-2 bg-emerald-500 text-brand-dark font-extrabold text-xs rounded-xl">Konfirmasi</button>
+                        <button @click="updateOrderStatus(ord.id, 'Rejected')" class="px-3 py-2 bg-rose-500/20 text-rose-400 text-xs rounded-xl">Tolak</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 6. LAPORAN TRANSAKSI (PELANGGAN & KASIR) -->
+    <!-- 6. LAPORAN TRANSAKSI (UPDATED) -->
     <div v-if="modals.reports" class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
         <div class="glass w-full max-w-4xl rounded-3xl p-6 relative max-h-[90vh] flex flex-col">
             <div class="flex justify-between pb-4 border-b border-white/10">
-                <h2 class="font-black text-white">Laporan Seluruh Transaksi</h2>
+                <h2 class="font-black text-white">Laporan Transaksi</h2>
                 <button @click="closeModal('reports')" class="text-gray-400">✕</button>
             </div>
+            
+            <!-- Summary Stats -->
+            <div v-if="reportSummary" class="grid grid-cols-2 gap-4 mb-4 p-4 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                <div>
+                    <p class="text-xs text-gray-400">Total Pendapatan</p>
+                    <p class="text-xl font-black text-emerald-400">{{ formatRupiah(reportSummary.total_pendapatan) }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-400">Jumlah Transaksi</p>
+                    <p class="text-xl font-black text-cyan-400">{{ reportSummary.jumlah_transaksi }}</p>
+                </div>
+            </div>
+
             <div class="flex-1 overflow-y-auto py-4">
                 <table class="w-full text-left text-xs">
-                    <thead class="text-gray-400 uppercase border-b border-white/10">
-                        <tr><th class="pb-2">Kode</th><th class="pb-2">Pelanggan</th><th class="pb-2">Tipe</th><th class="pb-2">Total</th><th class="pb-2">Waktu</th></tr>
+                    <thead class="text-gray-400 uppercase border-b border-white/10 sticky top-0 bg-brand-card">
+                        <tr><th class="pb-2">Kode</th><th class="pb-2">Pelanggan</th><th class="pb-2">Alamat</th><th class="pb-2">Metode</th><th class="pb-2">Tipe</th><th class="pb-2">Total</th><th class="pb-2">Waktu</th></tr>
                     </thead>
                     <tbody class="divide-y divide-white/5">
-                        <tr v-for="r in reports" :key="r.id">
-                            <td class="py-3 font-mono text-cyan-400 font-bold">{{ r.invoice_code || r.order_code }}</td>
+                        <tr v-for="r in reports" :key="r.id" class="hover:bg-white/5">
+                            <td class="py-3 font-mono text-cyan-400 font-bold">{{ r.invoice_code }}</td>
                             <td class="py-3 text-white font-semibold">{{ r.nama_pelanggan }}</td>
-                            <td class="py-3"><span class="px-2 py-0.5 rounded text-[10px]" :class="r.tipe.includes('Kasir') ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-300'">{{ r.tipe }}</span></td>
+                            <td class="py-3 text-gray-400 text-[10px]">{{ r.alamat }}</td>
+                            <td class="py-3 text-gray-400 text-[10px]">{{ r.metode_pemesanan }}</td>
+                            <td class="py-3"><span class="px-2 py-0.5 rounded text-[10px]" :class="r.tipe_transaksi === 'Kasir' ? 'bg-purple-500/20 text-purple-300' : 'bg-blue-500/20 text-blue-300'">{{ r.tipe_transaksi }}</span></td>
                             <td class="py-3 font-bold text-emerald-400">{{ formatRupiah(r.total_akhir) }}</td>
-                            <td class="py-3 text-gray-400 text-[10px]">{{ r.tanggal || r.created_at }}</td>
+                            <td class="py-3 text-gray-400 text-[10px]">{{ r.tanggal }}</td>
                         </tr>
                     </tbody>
                 </table>
@@ -298,7 +332,9 @@
                 </div>
                 <div class="space-y-0.5 border-b-2 border-dashed border-gray-400 pb-2 mb-2 text-[10px]">
                     <div class="flex justify-between"><span>No:</span><span>{{ activeReceipt.invoice_code }}</span></div>
-                    <div class="flex justify-between"><span>Plg:</span><span>{{ activeReceipt.nama_pelanggan }}</span></div>
+                    <div class="flex justify-between"><span>Nama:</span><span>{{ activeReceipt.nama_pelanggan }}</span></div>
+                    <div class="flex justify-between"><span>Alamat:</span><span>{{ activeReceipt.alamat }}</span></div>
+                    <div class="flex justify-between"><span>Metode:</span><span>{{ activeReceipt.metode_pemesanan }}</span></div>
                 </div>
                 <div class="space-y-1.5 border-b-2 border-dashed border-gray-400 pb-2 mb-2">
                     <div v-for="it in activeReceipt.items" :key="it.product_nama">
@@ -310,6 +346,10 @@
                     <div class="flex justify-between"><span>TOTAL</span><span>{{ formatRupiah(activeReceipt.total_akhir) }}</span></div>
                     <div class="flex justify-between font-normal"><span>Bayar</span><span>{{ formatRupiah(activeReceipt.nominal_bayar) }}</span></div>
                     <div class="flex justify-between font-normal"><span>Kembali</span><span>{{ formatRupiah(activeReceipt.kembalian) }}</span></div>
+                </div>
+                <div class="text-center text-[9px] mt-3 pt-3 border-t border-gray-400">
+                    <p>Terima kasih telah berbelanja!</p>
+                    <p>{{ new Date().toLocaleString('id-ID') }}</p>
                 </div>
             </div>
             <button @click="window.print()" class="w-full py-3 mt-4 rounded-xl bg-cyan-500 text-brand-dark font-extrabold text-xs no-print">Cetak Struk</button>
@@ -367,12 +407,25 @@
             const productForm = reactive({ id: 0, nama: '', kategori_id: 1, harga: 0, harga_modal: 0, stok: 10, foto: '' });
             const saveProduct = async () => {
                 if(!productForm.nama || productForm.harga <= 0) return showToast('Lengkapi data produk', 'error');
-                const fd = new FormData();
-                for(let k in productForm) fd.append(k, productForm[k]);
-                await fetch('api.php?action=save_product', { method: 'POST', body: fd });
+                
+                if(userRole.value === 'kasir') {
+                    // Kasir: Tambah item custom ke cart
+                    cart.value.push({
+                        product: { id: null, nama: productForm.nama, harga: productForm.harga, kategori_nama: 'Custom', stok: 999, foto: '', is_custom: true },
+                        qty: 1
+                    });
+                    showToast('Item custom ditambahkan ke keranjang!');
+                } else {
+                    // Owner: Simpan ke database
+                    const fd = new FormData();
+                    for(let k in productForm) fd.append(k, productForm[k]);
+                    await fetch('api.php?action=save_product', { method: 'POST', body: fd });
+                    showToast('Produk berhasil disimpan!');
+                }
+                
                 closeModal('addProduct');
-                fetchProducts();
-                showToast('Produk berhasil disimpan!');
+                productForm.id = 0; productForm.nama = ''; productForm.harga = 0; productForm.harga_modal = 0; productForm.stok = 10; productForm.foto = '';
+                if(userRole.value !== 'kasir') fetchProducts();
             };
 
             const updateStockManual = async (p) => {
@@ -382,7 +435,7 @@
             };
 
             const cart = ref([]);
-            const checkoutForm = reactive({ nama: '', meja: '', diskon: 0, bayar: 0 });
+            const checkoutForm = reactive({ nama: '', alamat: '', metode_pemesanan: 'Ambil Sendiri', catatan_pesanan: '', diskon: 0, bayar: 0 });
             
             onMounted(() => {
                 fetchProducts();
@@ -404,7 +457,14 @@
                 if (idx > -1) {
                     const next = cart.value[idx].qty + delta;
                     if(next <= 0) cart.value.splice(idx, 1);
-                    else if(next <= cart.value[idx].product.stok) cart.value[idx].qty = next;
+                    else cart.value[idx].qty = next;
+                }
+            };
+            const setCartQty = (id, qty) => {
+                const idx = cart.value.findIndex(i => i.product.id === id);
+                if (idx > -1) {
+                    if(qty <= 0) cart.value.splice(idx, 1);
+                    else cart.value[idx].qty = qty;
                 }
             };
             const cartTotalItems = computed(() => cart.value.reduce((s, i) => s + i.qty, 0));
@@ -418,7 +478,9 @@
 
                 const payload = {
                     nama: nama,
-                    meja: checkoutForm.meja || 'Meja 1',
+                    alamat: checkoutForm.alamat || 'Meja 1',
+                    metode_pemesanan: checkoutForm.metode_pemesanan,
+                    catatan_pesanan: checkoutForm.catatan_pesanan,
                     total: cartTotalHarga.value,
                     items: cart.value.map(i => ({ product_id: i.product.id, nama: i.product.nama, harga: i.product.harga, qty: i.qty, subtotal: i.product.harga * i.qty }))
                 };
@@ -435,7 +497,7 @@
             };
 
             const incomingOrders = ref([]);
-            const pendingOrdersCount = computed(() => incomingOrders.value.filter(o => o.status === 'PENDING').length);
+            const pendingOrdersCount = computed(() => incomingOrders.value.filter(o => o.status === 'Pending').length);
             const fetchIncomingOrders = async () => {
                 try {
                     const res = await fetch('api.php?action=get_customer_orders');
@@ -449,7 +511,7 @@
                 await fetch('api.php?action=update_order_status', { method: 'POST', body: fd });
                 fetchIncomingOrders();
                 fetchProducts();
-                showToast(status === 'APPROVED' ? 'Pesanan dikonfirmasi & stok terpotong!' : 'Pesanan ditolak');
+                showToast(status === 'Approved' ? 'Pesanan dikonfirmasi & stok terpotong!' : 'Pesanan ditolak');
             };
 
             const activeReceipt = ref({});
@@ -457,30 +519,39 @@
                 if(checkoutForm.bayar < cartTotalHarga.value) return showToast('Pembayaran kurang', 'error');
                 const payload = {
                     nama_pelanggan: checkoutForm.nama || 'Walk-in',
-                    nomor_meja: checkoutForm.meja || 'Kasir',
+                    alamat: checkoutForm.alamat || 'Kasir',
+                    metode_pemesanan: checkoutForm.metode_pemesanan,
+                    catatan_pesanan: checkoutForm.catatan_pesanan,
                     total_harga: cartSubtotal.value,
                     diskon: checkoutForm.diskon,
                     total_akhir: cartTotalHarga.value,
                     nominal_bayar: checkoutForm.bayar,
                     kembalian: checkoutForm.bayar - cartTotalHarga.value,
                     kasir_nama: authState.kasirName,
-                    items: cart.value.map(i => ({ product_id: i.product.id, product_nama: i.product.nama, harga: i.product.harga, harga_modal: i.product.harga_modal, qty: i.qty, subtotal: i.product.harga * i.qty }))
+                    items: cart.value.map(i => ({ product_id: i.product.id, product_nama: i.product.nama, harga: i.product.harga, harga_modal: i.product.harga_modal || 0, qty: i.qty, subtotal: i.product.harga * i.qty, is_custom: i.product.is_custom ? 1 : 0 }))
                 };
 
                 const res = await fetch('api.php?action=checkout_kasir', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
                 const r = await res.json();
                 if(r.status === 'success') {
                     activeReceipt.value = { ...payload, invoice_code: r.data.invoice, tanggal: new Date().toLocaleString() };
-                    cart.value = []; closeModal('cart'); openModal('receipt');
+                    cart.value = [];
+                    checkoutForm.nama = ''; checkoutForm.alamat = ''; checkoutForm.metode_pemesanan = 'Ambil Sendiri'; checkoutForm.catatan_pesanan = ''; checkoutForm.diskon = 0; checkoutForm.bayar = 0;
+                    closeModal('cart');
+                    openModal('receipt');
                     fetchProducts();
-                }
+                } else showToast(r.message, 'error');
             };
 
             const reports = ref([]);
+            const reportSummary = ref(null);
             const fetchReports = async () => {
                 const res = await fetch('api.php?action=get_reports');
                 const d = await res.json();
-                if(d.status === 'success') reports.value = d.data;
+                if(d.status === 'success') {
+                    reports.value = d.data.transactions || [];
+                    reportSummary.value = d.data.summary || {};
+                }
             };
 
             const formatRupiah = (v) => 'Rp ' + (v||0).toLocaleString('id-ID');
@@ -488,9 +559,9 @@
             return {
                 toast, modals, openModal, closeModal, userRole, authState, authForm, processLogin, logout,
                 activeCategory, searchQuery, products, filteredProducts, productForm, saveProduct, updateStockManual,
-                cart, checkoutForm, getCartQty, addToCart, updateCartQty, cartTotalItems, cartTotalHarga,
+                cart, checkoutForm, getCartQty, addToCart, updateCartQty, setCartQty, cartTotalItems, cartTotalHarga,
                 submitCustomerOrder, incomingOrders, pendingOrdersCount, updateOrderStatus, processKasirCheckout,
-                reports, fetchReports, activeReceipt, formatRupiah
+                reports, reportSummary, fetchReports, activeReceipt, formatRupiah
             };
         }
     }).mount('#app');
