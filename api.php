@@ -58,12 +58,16 @@ switch ($action) {
 
         $pdo->beginTransaction();
         try {
-            $code = 'ORD-' . rand(1000, 9999);
-            $st = $pdo->prepare("INSERT INTO customer_orders (order_code, nama_pelanggan, nomor_meja, total_akhir) VALUES (?, ?, ?, ?)");
-            $st->execute([$code, $data['nama'], $data['meja'], $data['total']]);
+            $code = 'ORD-' . date('Ymd') . '-' . rand(10000, 99999);
+            $alamat = $data['alamat'] ?? 'Meja 1';
+            $metode = $data['metode_pemesanan'] ?? 'Ambil Sendiri';
+            $catatan = $data['catatan_pesanan'] ?? '';
+
+            $st = $pdo->prepare("INSERT INTO transactions (invoice_code, nama_pelanggan, alamat, metode_pemesanan, catatan_pesanan, total_harga, total_akhir, tipe_transaksi, status) VALUES (?, ?, ?, ?, ?, ?, ?, 'Online Pelanggan', 'Pending')");
+            $st->execute([$code, $data['nama'], $alamat, $metode, $catatan, $data['total'], $data['total']]);
             $order_id = $pdo->lastInsertId();
 
-            $sti = $pdo->prepare("INSERT INTO customer_order_items (order_id, product_id, product_nama, harga, qty, subtotal) VALUES (?, ?, ?, ?, ?, ?)");
+            $sti = $pdo->prepare("INSERT INTO transaction_items (transaction_id, product_id, product_nama, harga, qty, subtotal) VALUES (?, ?, ?, ?, ?, ?)");
             foreach ($data['items'] as $item) {
                 $sti->execute([$order_id, $item['product_id'], $item['nama'], $item['harga'], $item['qty'], $item['subtotal']]);
             }
@@ -76,27 +80,28 @@ switch ($action) {
         break;
 
     case 'get_customer_orders':
-        $st = $pdo->query("SELECT * FROM customer_orders ORDER BY id DESC");
+        $st = $pdo->query("SELECT * FROM transactions WHERE tipe_transaksi = 'Online Pelanggan' ORDER BY id DESC");
         $orders = $st->fetchAll();
         foreach ($orders as &$ord) {
-            $sti = $pdo->prepare("SELECT * FROM customer_order_items WHERE order_id = ?");
+            $sti = $pdo->prepare("SELECT * FROM transaction_items WHERE transaction_id = ?");
             $sti->execute([$ord['id']]);
             $ord['items'] = $sti->fetchAll();
+            $ord['order_code'] = $ord['invoice_code'];
         }
         json_response('success', 'OK', $orders);
         break;
 
     case 'update_order_status':
         $id = intval($_POST['id'] ?? 0);
-        $status = $_POST['status'] ?? 'APPROVED';
+        $status = $_POST['status'] ?? 'Approved';
 
         $pdo->beginTransaction();
         try {
-            $st = $pdo->prepare("UPDATE customer_orders SET status = ? WHERE id = ?");
+            $st = $pdo->prepare("UPDATE transactions SET status = ? WHERE id = ?");
             $st->execute([$status, $id]);
 
-            if ($status === 'APPROVED') {
-                $items = $pdo->prepare("SELECT * FROM customer_order_items WHERE order_id = ?");
+            if ($status === 'Approved') {
+                $items = $pdo->prepare("SELECT * FROM transaction_items WHERE transaction_id = ?");
                 $items->execute([$id]);
                 foreach ($items->fetchAll() as $it) {
                     if ($it['product_id']) {
@@ -119,15 +124,24 @@ switch ($action) {
 
         $pdo->beginTransaction();
         try {
-            $code = 'TRX-' . date('Ymd') . '-' . rand(100, 999);
-            $st = $pdo->prepare("INSERT INTO transactions (invoice_code, nama_pelanggan, nomor_meja, total_harga, diskon, total_akhir, nominal_bayar, kembalian, kasir_nama) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)");
-            $st->execute([$code, $data['nama_pelanggan'], $data['nomor_meja'], $data['total_harga'], $data['diskon'], $data['total_akhir'], $data['nominal_bayar'], $data['kembalian'], $data['kasir_nama']]);
+            $code = 'TRX-' . date('Ymd') . '-' . rand(10000, 99999);
+            $alamat = $data['alamat'] ?? 'Kasir';
+            $metode = $data['metode_pemesanan'] ?? 'Ambil Sendiri';
+            $catatan = $data['catatan_pesanan'] ?? '';
+
+            $st = $pdo->prepare("INSERT INTO transactions (invoice_code, nama_pelanggan, alamat, metode_pemesanan, catatan_pesanan, total_harga, diskon, total_akhir, nominal_bayar, kembalian, kasir_nama, tipe_transaksi, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'Kasir', 'Selesai')");
+            $st->execute([$code, $data['nama_pelanggan'], $alamat, $metode, $catatan, $data['total_harga'], $data['diskon'], $data['total_akhir'], $data['nominal_bayar'], $data['kembalian'], $data['kasir_nama']]);
             $tx_id = $pdo->lastInsertId();
 
-            $sti = $pdo->prepare("INSERT INTO transaction_items (transaction_id, product_id, product_nama, harga, harga_modal, qty, subtotal) VALUES (?, ?, ?, ?, ?, ?, ?)");
+            $sti = $pdo->prepare("INSERT INTO transaction_items (transaction_id, product_id, product_nama, harga, harga_modal, qty, subtotal, is_custom) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             foreach ($data['items'] as $it) {
-                $sti->execute([$tx_id, $it['product_id'], $it['product_nama'], $it['harga'], $it['harga_modal'], $it['qty'], $it['subtotal']]);
-                $pdo->prepare("UPDATE products SET stok = GREATEST(0, stok - ?) WHERE id = ?")->execute([$it['qty'], $it['product_id']]);
+                $is_custom = $it['is_custom'] ?? 0;
+                $sti->execute([$tx_id, $it['product_id'] ?? null, $it['product_nama'], $it['harga'], $it['harga_modal'] ?? 0, $it['qty'], $it['subtotal'], $is_custom]);
+                
+                // Update stok hanya jika produk ada di database
+                if ($it['product_id'] && !$is_custom) {
+                    $pdo->prepare("UPDATE products SET stok = GREATEST(0, stok - ?) WHERE id = ?")->execute([$it['qty'], $it['product_id']]);
+                }
             }
             $pdo->commit();
             json_response('success', 'OK', ['invoice' => $code]);
@@ -138,27 +152,25 @@ switch ($action) {
         break;
 
     case 'get_reports':
-        $st = $pdo->query("SELECT t.*, (SELECT SUM(ti.harga_modal * ti.qty) FROM transaction_items ti WHERE ti.transaction_id = t.id) as total_modal FROM transactions t ORDER BY t.id DESC");
+        $st = $pdo->query("SELECT t.*, (SELECT SUM(ti.harga_modal * ti.qty) FROM transaction_items ti WHERE ti.transaction_id = t.id) as total_modal FROM transactions t WHERE status IN ('Selesai', 'Approved') ORDER BY t.tanggal DESC");
         $txs = $st->fetchAll();
         foreach ($txs as &$t) {
             $items = $pdo->prepare("SELECT * FROM transaction_items WHERE transaction_id = ?");
             $items->execute([$t['id']]);
             $t['items'] = $items->fetchAll();
-            $t['tipe'] = 'Kasir POS';
         }
 
-        $st_o = $pdo->query("SELECT * FROM customer_orders ORDER BY id DESC");
-        $orders = $st_o->fetchAll();
-        foreach ($orders as &$o) {
-            $items = $pdo->prepare("SELECT * FROM customer_order_items WHERE order_id = ?");
-            $items->execute([$o['id']]);
-            $o['items'] = $items->fetchAll();
-            $o['invoice_code'] = $o['order_code'];
-            $o['total_akhir'] = $o['total_akhir'];
-            $o['tipe'] = 'Online Pelanggan (' . $o['status'] . ')';
-        }
+        // Hitung total pendapatan dan jumlah transaksi
+        $sum_stmt = $pdo->query("SELECT SUM(total_akhir) as total_pendapatan, COUNT(*) as jumlah_transaksi FROM transactions WHERE status IN ('Selesai', 'Approved')");
+        $summary = $sum_stmt->fetch();
 
-        json_response('success', 'OK', array_merge($txs, $orders));
+        json_response('success', 'OK', [
+            'transactions' => $txs,
+            'summary' => [
+                'total_pendapatan' => $summary['total_pendapatan'] ?? 0,
+                'jumlah_transaksi' => $summary['jumlah_transaksi'] ?? 0
+            ]
+        ]);
         break;
 
     default:
