@@ -1,5 +1,5 @@
 -- ============================================================
--- DATABASE HARINFOOD POS LITE (FULL FITUR)
+-- DATABASE HARINFOOD POS LITE (FULL FITUR) - UPDATED v2
 -- ============================================================
 
 CREATE DATABASE IF NOT EXISTS `harinfood_db` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -31,27 +31,29 @@ CREATE TABLE IF NOT EXISTS `products` (
 INSERT INTO `products` (`id`, `kategori_id`, `nama`, `harga`, `harga_modal`, `stok`, `foto`) VALUES
 (1, 1, 'Nasi Goreng Spesial Seafood', 25000, 15000, 45, 'https://images.unsplash.com/photo-1603133872878-684f208fb84b?auto=format&fit=crop&w=500&q=80'),
 (2, 1, 'Ayam Geprek Sambal Bawang', 20000, 13000, 30, 'https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=500&q=80'),
-(3, 1, 'Risoles Daging Ayam (Isi 3)', 15000, 8000, 20, 'https://images.unsplash.com/photo-1528825871115-3581a5387918?auto=format&fit=crop&w=500&q=80'),
+(3, 1, 'Risoles Daging Ayam (Isi 3)', 15000, 8000, 20, 'https://images.unsplash.com/photo-1528825871115-3581a5387919?auto=format&fit=crop&w=500&q=80'),
 (4, 2, 'Es Teh Manis Jumbo', 5000, 2000, 100, 'https://images.unsplash.com/photo-1556679343-c7306c1976bc?auto=format&fit=crop&w=500&q=80'),
 (5, 2, 'Es Kopi Susu Aren', 15000, 8000, 50, 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&w=500&q=80');
 
--- 3. TABEL TRANSAKSI KASIR & PELANGGAN (UNIFIED)
+-- 3. TABEL TRANSAKSI UNIFIED (Kasir + Online)
 CREATE TABLE IF NOT EXISTS `transactions` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `invoice_code` VARCHAR(50) NOT NULL UNIQUE,
   `tanggal` DATETIME DEFAULT CURRENT_TIMESTAMP,
   `nama_pelanggan` VARCHAR(100) DEFAULT 'Pelanggan',
-  `alamat` VARCHAR(255) DEFAULT 'Ambil Sendiri',
-  `metode_pesanan` ENUM('ambil_sendiri', 'delivery') DEFAULT 'ambil_sendiri',
-  `keterangan` TEXT,
+  `alamat` VARCHAR(255) DEFAULT '',
+  `metode_pemesanan` ENUM('Ambil Sendiri', 'Delivery') DEFAULT 'Ambil Sendiri',
+  `catatan_pesanan` TEXT,
   `total_harga` INT NOT NULL DEFAULT 0,
   `diskon` INT NOT NULL DEFAULT 0,
   `total_akhir` INT NOT NULL DEFAULT 0,
   `nominal_bayar` INT NOT NULL DEFAULT 0,
   `kembalian` INT NOT NULL DEFAULT 0,
-  `tipe_transaksi` ENUM('kasir', 'online_pelanggan') DEFAULT 'kasir',
   `kasir_nama` VARCHAR(100) DEFAULT 'Kasir Utama',
-  `status` ENUM('pending', 'approved', 'rejected', 'selesai') DEFAULT 'selesai'
+  `tipe_transaksi` ENUM('Kasir', 'Online Pelanggan') DEFAULT 'Kasir',
+  `status` ENUM('Pending', 'Approved', 'Rejected', 'Selesai') DEFAULT 'Selesai',
+  KEY `idx_tanggal` (`tanggal`),
+  KEY `idx_tipe` (`tipe_transaksi`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS `transaction_items` (
@@ -67,7 +69,7 @@ CREATE TABLE IF NOT EXISTS `transaction_items` (
   FOREIGN KEY (`transaction_id`) REFERENCES `transactions`(`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
--- 4. TABEL PESANAN ONLINE PELANGGAN (DEPRECATED - untuk backward compatibility)
+-- 4. TABEL PESANAN ONLINE PELANGGAN (Legacy - kept for backward compatibility)
 CREATE TABLE IF NOT EXISTS `customer_orders` (
   `id` INT AUTO_INCREMENT PRIMARY KEY,
   `order_code` VARCHAR(50) NOT NULL UNIQUE,
